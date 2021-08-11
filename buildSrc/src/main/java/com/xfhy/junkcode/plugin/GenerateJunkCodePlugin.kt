@@ -4,10 +4,12 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.api.ApplicationVariant
 import com.xfhy.junkcode.ext.AndroidJunkCodeExt
 import com.xfhy.junkcode.ext.JunkCodeConfig
+import com.xfhy.junkcode.task.AndroidJunkCodeTask
 import groovy.lang.Closure
 import groovy.util.XmlParser
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import java.io.File
 import java.lang.IllegalArgumentException
 
@@ -31,7 +33,7 @@ class GenerateJunkCodePlugin : Plugin<Project> {
             android.applicationVariants.all { variant: ApplicationVariant ->
                 val variantName = variant.name
                 println("变体名称 $variantName")
-                // TODO: 2021/8/11  这里没有配置就返回了,配置一下,测试
+                //拿到该变体对应的配置
                 val junkCodeConfig: Closure<JunkCodeConfig> = generateJunkCodeExt.configMap[variantName] ?: return@all
                 val dir = File(project.buildDir, "generated/source/junk/$variantName")
                 val resDir = File(dir, "res")
@@ -39,6 +41,13 @@ class GenerateJunkCodePlugin : Plugin<Project> {
                 val manifestFile = File(dir, "AndroidManifest.xml")
                 val packageName = findPackageName(variant)
                 println("包名找到了  是$packageName")
+                val task = project.task(
+                    mapOf(Task.TASK_TYPE to AndroidJunkCodeTask::class.java),
+                    "generate${variantName.capitalize()}JunkCode"
+                )
+                /*task.configure(object :Closure<AndroidJunkCodeTask>(){
+
+                })*/
             }
         }
     }
@@ -52,6 +61,7 @@ class GenerateJunkCodePlugin : Plugin<Project> {
         var packageName: String? = null
         variant.sourceSets.forEach {
             if (it.manifestFile.exists()) {
+                //解析清单文件,找到package
                 val parser = XmlParser()
                 val node = parser.parse(it.manifestFile)
                 packageName = node.attribute("package") as? String

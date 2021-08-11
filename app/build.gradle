@@ -33,6 +33,24 @@ android {
     }
 }
 
+android.applicationVariants.all { variant ->
+    switch (variant.name) {
+        case "debug":
+            androidJunkCode.configMap.put(variant.name, {
+                packageBase = "cn.xfhy.plugin.junk"
+                packageCount = 30
+                activityCountPerPackage = 3
+                excludeActivityJavaFile = false
+                otherCountPerPackage = 50
+                methodCountPerClass = 20
+                resPrefix = "junk_"
+                drawableCount = 300
+                stringCount = 300
+            })
+            break
+    }
+}
+
 dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
